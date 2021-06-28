@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animation from './Animations';
+import Animation from './Animat';
 
 export default function App() {
   return (

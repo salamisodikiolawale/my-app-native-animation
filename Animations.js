@@ -1,82 +1,72 @@
-// Components/Tests.js
-import React, { useRef, useState } from "react";
-import { PanResponder, Dimensions, View,StyleSheet, Alert, Animated  } from 'react-native'
+import React, { useRef,useState } from "react";
+import { Animated, View, StyleSheet, PanResponder, Text, Alert,Dimensions } from "react-native";
 
-export default class Animations extends React.Component {
-
-  constructor(props) {
-    super(props)
-    this.state = {
-      topPosition: 0,
-      leftPosition: 0,
-      width:0,
-      height: 0
-    }
-    //const pan = new Animated.ValueXY();
-    var {height, width} = Dimensions.get('window');
-    this.panResponder = PanResponder.create({
-        onStartShouldSetPanResponder: (evt, gestureState) => true,
-      //   onPanResponderGrant: () => {
-      //     console.log('panResponder')
-      //   pan.setOffset({
-      //     x: pan.x._value,
-      //     y: pan.y._value
-      //   });
-      // },
-        onPanResponderMove: (evt, gestureState) => {
-            let touches = evt.nativeEvent.touches;
-            let directionH = touches[0].pageY - this.state.height/2;
-            let directionW = touches[0].pageX - this.state.width/2;
-            if (touches.length == 1) {
-              if(( directionH < this.state.height/2 && directionH>=0) && 
-                 ( directionW < this.state.width/2  &&  directionW>=0)){
-                  this.setState({
-                    topPosition: directionH,
-                    leftPosition: directionW
-                  })
-                  const centerX = this.state.width/2;
-                  const centerY = this.state.height/2;
-                  console.log("direction",directionW, directionH)
-                  if(directionH == centerY && directionH == centerY){
-                    Alert.alert('Hello')
-                  }
-                   console.log("center",centerX, centerY)
-                  //console.log(directionH + "  "+directionW +" "+height/2+"    "+width/2+"  "+this.state.width+"    "+this.state.height)
-              }
-                
-            }
-        }
-    })
+const App = () => {
+  
+  const pan = useRef(new Animated.ValueXY()).current;
+  const [state, setState] = useState({
+    panX:0,
+    panY:0,
+    widthSmall:0,
+    heightSmall:0
+  });
+  console.log(pan.x._value, pan.y._value)
+  const {height, width} = Dimensions.get('window');
+  function move(panX, panY){
+    console.log('Center',window.Math.round((width/2)-state.widthSmall/2), window.Math.round((height/2)-state.heightSmall/2), '|||',  window.Math.round(panX._value), window.Math.round(panY._value))
+    if((window.Math.round(panX._value) === window.Math.round(((width/2)-75)) && (window.Math.round(panY._value) === window.Math.round((height/2)-75)))){
+    Alert.alert("Centre")
   }
+  }
+  
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value
+        });
+      },
+      
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }],{useNativeDriver: false}),
+      onPanResponderRelease: () => {
+        // pan.flattenOffset();
+        
+      }
+    })
+  ).current;
 
-  render() {
-    return (
-      <View 
-        style={styles.main_container}
+  return (
+    <View style={styles.container}>
+      <Animated.View
+        style={{
+          transform: [{ translateX: pan.x }, { translateY: pan.y }]
+        }}
         onLayout={(event) => {
         var {x, y, width, height} = event.nativeEvent.layout;
-        this.setState({width:width, height:height})
-        }}
+        setState({widthSmall : width, heightSmall: height})
+    }}
+        onTouchMove={() => move(pan.x, pan.y)}
+        {...panResponder.panHandlers}
       >
-        <View
-          {...this.panResponder.panHandlers}
-          style={[styles.animation_view, { top: this.state.topPosition, left: this.state.leftPosition }]}>
-        </View>
-      </View>
-    )
-  }
+        <View style={styles.box} />
+      </Animated.View>
+    </View>
+  );
 }
-const styles = StyleSheet.create({
-  main_container: {
-    flex: 1,
-    borderWidth:1,
-    borderColor:'red',
-    marginTop:40,
-  },
-  animation_view: {
-    backgroundColor: 'red',
-    width: 100,
-    height: 100
-  }
-})
 
+const styles = StyleSheet.create({
+  container: {  
+   
+  },
+  box: {
+    height: 150,
+    width: 150,
+    backgroundColor: "blue",
+    borderRadius: 5,
+  
+  }
+});
+
+export default App;
